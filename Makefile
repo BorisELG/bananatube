@@ -1,5 +1,5 @@
 install:
-	pip install -r requirements.txt
+	poetry install
 
 yt-download:
 	python yt_downloader.py
