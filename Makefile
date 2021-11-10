@@ -1,5 +1,5 @@
 install:
 	poetry install
 
-yt-download:
-	python yt_downloader.py
+start:
+	poetry run python3 main.py
