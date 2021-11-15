@@ -6,8 +6,6 @@ import youtube_dl
 from spleeter.separator import Separator
 from google.cloud import storage
 
-# TODO: convert WAV to MP3
-
 def yt_dl(video_url: str):
     video_info = youtube_dl.YoutubeDL().extract_info(
         url = video_url,download=False
@@ -31,6 +29,13 @@ def spleeter(path_to_audio: str, path_to_directory: str):
     separator = Separator('spleeter:2stems')
     separator.separate_to_file(path_to_audio, path_to_directory)
 
+def convert_wav_to_mp3(folder_path):
+    rel_paths = glob.glob(folder_path + '/**', recursive=True)
+    for local_file in rel_paths:
+        if local_file[-4:] == ".wav":
+            AudioSegment.from_wav(local_file).export(f"{local_file[:-4]}.mp3", format="mp3")
+            delete_file(local_file)
+
 def delete_folder(folder_path: str):
     shutil.rmtree(folder_path)
 
@@ -42,6 +47,7 @@ def upload_from_directory(directory_path: str, dest_bucket_name: str, dest_blob_
     rel_paths = glob.glob(directory_path + '/**', recursive=True)
     bucket = gcs_client.get_bucket(dest_bucket_name)
     for local_file in rel_paths:
+        print(local_file)
         tmp_path = "/".join(local_file.split(os.sep)[1:])
         remote_path = f'{dest_blob_name}/{tmp_path[4:]}'
         if os.path.isfile(local_file):
@@ -50,8 +56,8 @@ def upload_from_directory(directory_path: str, dest_bucket_name: str, dest_blob_
 
 if __name__ == '__main__':
     filename = yt_dl("https://www.youtube.com/watch?v=w_5Sh81SBBs")
-    print(filename)
     spleeter(f"{filename}", "/tmp/")
+    convert_wav_to_mp3(f"/tmp/{filename[5:-4]}")
     upload_from_directory(f"/tmp/{filename[5:-4]}", "splitted-songs", "songs")
     delete_file(filename)
     delete_folder(f"/tmp/{filename[5:-4]}")
