@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  api:
+    build: 
+      context: ../
+      dockerfile: docker/Dockerfile
+      network: host
+      args:                                                                      
+        SA_KEY_FILE: ${SA_KEY_FILE}
+    ports:
+      - "80:80"
+    environment:
+      MAX_WORKERS: 1
